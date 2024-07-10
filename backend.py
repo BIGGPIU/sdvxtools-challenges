@@ -1,6 +1,8 @@
 import random
 from songs import *
 import os
+import sqlite3
+from time import sleep
 
 #EQUATION = y=1000000-\left(d\cdot10000-\left(v^{3}\cdot15+20000\right)\right) just put it in desmos 
 #D = difficulty
@@ -22,8 +24,9 @@ if diff == 17:
 
 class challenges():
 
-    def __init__ (self,vf) -> None:
+    def __init__ (self,vf,user) -> None:
         self.vf = vf
+        self.usr = user
 
     def get_id(self,diff) -> str:
         
@@ -31,7 +34,10 @@ class challenges():
         # I think I want it formatted like this: RANDOMCHART-DIFF-GOALSCORE
         goalscore = equation(diff,self.vf)
         goalscore += random.randint(-10000,10000) #gotta add a bit of randomness :3
+        if goalscore > 1000000:
+            goalscore = 995000
 
+        goalscore = (str(goalscore)+"0") #I'm so fucking stupid I thought the best score was 1 million not ten million :skull: I've been playing for 2 years 
         id = f"{randomchart}-{diff}-{goalscore}"
         self.id = id.split("-")
         return id
@@ -54,10 +60,44 @@ class challenges():
             temp = getsongslist(20)
             answer = f"Get {hold[2]} or more on {temp[int(hold[0])]} {hold[1]}"
             return answer
+        
+    def checkdbforscore(self):
+        conn = sqlite3.connect(r"D:\usc\maps.db")
+        cursor = conn.cursor()
+        sql = """SELECT score,chart_hash FROM Scores LIMIT 5"""
+        cursor.execute(sql)
+        returned = list(cursor.fetchall())
+        conn.close()
+        hold = self.id
+        temp = getsongslist(int(hold[1]))
+        checkforme = songhash[temp[int(hold[0])]]
+        print (checkforme)
+
+        #VOLPOINTS CALCULATION y=d^2*v/2
+
+        for i in returned:
+            if i[0] >= int(hold[2]):
+                #if i[1] == checkforme:
+                    print ("congrats on the clear")
+                    conn = sqlite3.connect("sdvxtools.db")
+                    cursor = conn.cursor()
+                    sql = f"SELECT * FROM User WHERE Name LIKE '{self.usr}'"
+                    cursor.execute(sql)
+                    returned = list(cursor.fetchall())
+                    update1 = returned[0][1]+(int(hold[1]) ** 2 * (self.vf/2))
+                    update2 = returned[0][2]+1
+                    sql = f"UPDATE User SET Volpoints={update1},Challenges_Completed={update2} WHERE Name='{self.usr}'"
+                    cursor.execute(sql)
+                    conn.commit()
+                    conn.close()
+                    return "CLEAR"
+                    
+                    
+                    
+        
 
 
-def checkdbforscore():
-    pass
+
 
 if __name__ == "__main__":
     #hold = os.listdir("C:\\Users\\diyaj\\Documents\\GitHub\\biggpiu.github.io\\sdvxtools\\picker\\charts\\20")
@@ -66,6 +106,11 @@ if __name__ == "__main__":
     #    i = i.replace(".jpg","")
     #    doingyourmom.append(i)
     #print (str(doingyourmom))
-    hold = challenges(17)
+    hold = challenges(17,"GUEST")
     print(hold.get_id(17))
     print(hold.get_challenge())
+
+    temp = hold.checkdbforscore()
+
+    while temp != "CLEAR":
+        temp = hold.checkdbforscore
