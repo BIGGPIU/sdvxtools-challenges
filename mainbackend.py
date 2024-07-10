@@ -24,11 +24,19 @@ if diff == 17:
 
 class challenges():
 
-    def __init__ (self,vf,user) -> None:
+    def __init__ (self,vf,user,CHECK_FOR_VF_IN_DB=False) -> None:
+
+        if CHECK_FOR_VF_IN_DB == True:
+            conn = sqlite3.connect(r"D:\usc\maps.db")
+            cursor = conn.cursor()
+            sql = f"SELECT VF FROM User WHERE Name LIKE '{user}'"
+            cursor.execute(sql)
+            vf = cursor.fetchone()
+            
         self.vf = vf
         self.usr = user
 
-    def get_id(self,diff) -> str:
+    def make_id(self,diff) -> str:
         
         randomchart = random.randint(0,len(getsongslist(19)))
         # I think I want it formatted like this: RANDOMCHART-DIFF-GOALSCORE
@@ -42,6 +50,9 @@ class challenges():
         self.id = id.split("-")
         return id
     
+    def translate_id(self,ID):
+        self.id = ID.split("-")
+
     def get_challenge(self):
         hold = self.id
         if hold[1] == '17':
@@ -64,20 +75,20 @@ class challenges():
     def checkdbforscore(self):
         conn = sqlite3.connect(r"D:\usc\maps.db")
         cursor = conn.cursor()
-        sql = """SELECT score,chart_hash FROM Scores LIMIT 5"""
+        sql = """SELECT score,chart_hash FROM Scores ORDER BY timestamp DESC LIMIT 5"""
         cursor.execute(sql)
         returned = list(cursor.fetchall())
+        print(returned)
         conn.close()
         hold = self.id
         temp = getsongslist(int(hold[1]))
         checkforme = songhash[temp[int(hold[0])]]
-        print (checkforme)
-
+        print(checkforme)
         #VOLPOINTS CALCULATION y=d^2*v/2
 
         for i in returned:
             if i[0] >= int(hold[2]):
-                #if i[1] == checkforme:
+                if i[1] == checkforme:
                     print ("congrats on the clear")
                     conn = sqlite3.connect("sdvxtools.db")
                     cursor = conn.cursor()
@@ -90,12 +101,43 @@ class challenges():
                     cursor.execute(sql)
                     conn.commit()
                     conn.close()
-                    return "CLEAR"
+                    return ["CLEAR",update1]
+            return ":3"
                     
+def MAKEuser(NAME,VF) -> None:
+    conn = sqlite3.connect(r"sdvxtools.db") 
+    cursor = conn.cursor()
+    sql = f"INSERT INTO User(Name,Volpoints,Challenges_Completed,VF) Values(?,?,?,?)"
+    commitinfo = (NAME,0,0,VF)
+    cursor.execute(sql,commitinfo)
+    conn.commit()
+    conn.close()
                     
-                    
-        
+def GETallusers() -> list:
+    conn = sqlite3.connect("sdvxtools.db")
+    cursor = conn.cursor()
+    sql = "SELECT Name FROM User"
+    cursor.execute(sql)
+    answer = list(cursor.fetchall())
+    conn.close()
+    return answer
 
+def UPDATEuserinto(NAME,value) -> None:
+    conn = sqlite3.connect("sdvxtools.db")
+    cursor = conn.cursor()
+    sql = f"UPDATE User SET VF='{value}' WHERE Name='{NAME}'"
+    cursor.execute(sql)
+    conn.commit()
+    conn.close()
+
+def GETuserVF(NAME) -> str:
+    conn = sqlite3.connect("sdvxtools.db")
+    cursor = conn.cursor()
+    sql = f"SELECT VF FROM User WHERE Name='{NAME}'"
+    cursor.execute(sql)
+    answer = cursor.fetchone()
+    conn.close()
+    return answer
 
 
 
@@ -107,7 +149,7 @@ if __name__ == "__main__":
     #    doingyourmom.append(i)
     #print (str(doingyourmom))
     hold = challenges(17,"GUEST")
-    print(hold.get_id(17))
+    print(hold.make_id(17))
     print(hold.get_challenge())
 
     temp = hold.checkdbforscore()
