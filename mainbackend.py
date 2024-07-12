@@ -78,12 +78,13 @@ class challenges():
         sql = """SELECT score,chart_hash FROM Scores ORDER BY timestamp DESC LIMIT 5"""
         cursor.execute(sql)
         returned = list(cursor.fetchall())
-        print(returned)
+        #print(returned)
         conn.close()
         hold = self.id
         temp = getsongslist(int(hold[1]))
-        checkforme = songhash[temp[int(hold[0])]]
-        print(checkforme)
+        hold1 = hold[1]
+        checkforme = songhash[hold1][temp[int(hold[0])]]
+        #print(checkforme)
         #VOLPOINTS CALCULATION y=d^2*v/2
 
         for i in returned:
@@ -95,7 +96,7 @@ class challenges():
                     sql = f"SELECT * FROM User WHERE Name LIKE '{self.usr}'"
                     cursor.execute(sql)
                     returned = list(cursor.fetchall())
-                    update1 = returned[0][1]+(int(hold[1]) ** 2 * (self.vf/2))
+                    update1 = returned[0][1]+(int(hold[1]) ** 2 * (int(self.vf)/2))
                     update2 = returned[0][2]+1
                     sql = f"UPDATE User SET Volpoints={update1},Challenges_Completed={update2} WHERE Name='{self.usr}'"
                     cursor.execute(sql)

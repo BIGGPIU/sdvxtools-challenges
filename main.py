@@ -1,6 +1,6 @@
 from time import sleep
 from mainbackend import *
-user = None
+user = []
 
 def main(clear=True):
     if clear == True:
@@ -51,7 +51,8 @@ def updateuser():
     hold1 = input (">>>")
     print ("Input your new VF")
     hold2 = input (">>>")
-    UPDATEuserinto(clean(display[int(hold1)][0]),int(hold2))
+    UPDATEuserinto(clean(display[int(hold1)][0]),float(hold2))
+    input(f"Updated VF for user {clean(display[int(hold1)])}. hit any key to continue")
     main()
 
 def listallusers():
@@ -61,15 +62,17 @@ def listallusers():
     main(False)
 
 def setuser(COMMAND):
-    user = COMMAND.replace("userset-","")
+    hold = COMMAND.replace("userset-","")
+    user.append(hold)
     print(f"\n Set user {user} \n")
     main(False)
 
 
 def challengecode(INPUT):
-    if user != None:
-            hold = GETuserVF(user)
-            challenge = challenges(hold,user)
+    if len(user) != 0:
+            hold = list(GETuserVF(user[0]))
+            hold = hold[0]
+            challenge = challenges(hold,user[0])
             challenge.translate_id(INPUT)
             yourchallenge = challenge.get_challenge()
             print (yourchallenge)
@@ -79,9 +82,11 @@ def challengecode(INPUT):
                 hold2 = challenge.checkdbforscore()
 
             print (f"You have gained {hold2[1]} volpoints!")
+            input("hit enter to continue")
             main()
     else:
-        hold = GETuserVF("GUEST")
+        hold = list(GETuserVF("GUEST"))
+        hold = hold[0]
         challenge = challenges(hold,"GUEST")
         challenge.translate_id(INPUT)
         yourchallenge = challenge.get_challenge()
@@ -92,6 +97,7 @@ def challengecode(INPUT):
             hold2 = challenge.checkdbforscore()
 
         print (f"You have gained {hold2[1]} volpoints!")
+        input("hit enter to continue")
         main()
 
 def clean(string) -> str:
